@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weldshop - Sistema de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #dc3545;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+        }
+        
+        .table th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        
+        .low-stock {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .in-stock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-weight: 600;
+        }
+        
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .stats-label {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+        
+        .modal-content {
+            border-radius: 15px;
+        }
+        
+        .search-box {
+            border-radius: 25px;
+            padding: 8px 16px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .export-btn {
+            background: linear-gradient(135deg, var(--primary-color), #8b0000);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .export-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        
+        .notification.success {
+            background-color: var(--success-color);
+        }
+        
+        .notification.error {
+            background-color: var(--primary-color);
+        }
+        
+        .user-info {
+            color: white;
+            margin-right: 15px;
+        }
+        
+        
+        /* Estilos específicos para móviles */
+        @media (max-width: 768px) {
+            .stats-card {
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            .stats-number {
+                font-size: 1.8rem;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .action-buttons .btn {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .product-image {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .table th,
+            .table td {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+            
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+            
+            .search-box {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Estilos para tablets */
+        @media (min-width: 769px) and (max-width: 992px) {
+            .stats-number {
+                font-size: 2rem;
+            }
+            
+            .action-buttons .btn {
+                font-size: 0.9rem;
+                padding: 8px 12px;
+            }
+        }
+        
+        /* Estilos para el estado de venta */
+        .status-badge.warning {
+            background-color: #ffc107;
+            color: #856404;
+        }
+        
+        .status-badge.low-stock {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.in-stock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        /* Estilos para método de pago */
+        .status-badge.primary {
+            background-color: #0d6efd;
+            color: white;
+        }
+        
+        .status-badge.warning {
+            background-color: #ffc107;
+            color: #856404;
+        }
+        
+        .status-badge.low-stock {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-badge.in-stock {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        
+        
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background: linear-gradient(135deg, #dc3545, #8b0000);">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <!-- Logo de Weldshop -->
+                 <img src="logo.png" alt="Logo Weldshop" class="me-2" style="height: 40px; border-radius: 5px;">
+                WELDSHOP
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="user-info" id="userInfo"></span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="cambiar-contrasena.html"><i class="fas fa-lock me-1"></i>Cambiar Contraseña</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt me-1"></i>Salir</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="card stats-card h-100">
+                    <div class="stats-number" id="totalProducts">0</div>
+                    <div class="stats-label">Productos Totales</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="card stats-card h-100">
+                    <div class="stats-number" id="lowStock">0</div>
+                    <div class="stats-label">Bajo Stock</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="card stats-card h-100">
+                    <div class="stats-number" id="totalSales">0</div>
+                    <div class="stats-label">Ventas Totales</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3 mb-3 mb-md-0">
+                <div class="card stats-card h-100">
+                    <div class="stats-number" id="revenue">$0</div>
+                    <div class="stats-label">Ingresos Totales</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mb-4" id="mainTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="productos-tab" data-bs-toggle="tab" data-bs-target="#productos" type="button" role="tab">Productos</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ventas-tab" data-bs-toggle="tab" data-bs-target="#ventas" type="button" role="tab">Ventas</button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="mainTabContent">
+            <!-- Productos Tab -->
+            <div class="tab-pane fade show active" id="productos" role="tabpanel">
+                <!-- Action Buttons -->
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+                    <h2 class="section-title mb-2 mb-md-0"><i class="fas fa-box-open me-2"></i>Productos - Weldshop</h2>
+                    <div class="action-buttons d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <i class="fas fa-plus me-1"></i>Agregar Producto
+                        </button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSaleModal">
+                            <i class="fas fa-shopping-cart me-1"></i>Nueva Venta
+                        </button>
+                        <button class="btn btn-warning" onclick="exportProductsToCSV()">
+                            <i class="fas fa-file-csv me-1"></i>Exportar CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="exportProductsToExcel()">
+                            <i class="fas fa-file-excel me-1"></i>Exportar Excel
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="row mb-4 g-3">
+                    <div class="col-12 col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control search-box" id="searchInput" placeholder="Buscar productos...">
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <select class="form-select" id="categoryFilter">
+                            <option value="">Todas las Categorías</option>
+                            <option value="electrodos">Electrodos</option>
+                            <option value="equipos">Equipos de Soldadura</option>
+                            <option value="accesorios">Accesorios</option>
+                            <option value="gases">Gases</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Categoría</th>
+                                        <th>Stock</th>
+                                        <th>Precio</th>
+                                        <th>Proveedor</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productsTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ventas Tab -->
+            <div class="tab-pane fade" id="ventas" role="tabpanel">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-2">
+                        <h2 class="section-title mb-2 mb-md-0"><i class="fas fa-shopping-cart me-2"></i>Ventas - Weldshop</h2>
+                        <div class="action-buttons d-flex flex-wrap gap-2 justify-content-center justify-content-md-start">
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSaleModal">
+                                <i class="fas fa-plus me-1"></i>Nueva Venta
+                            </button>
+                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#searchSaleModal">
+                                <i class="fas fa-search me-1"></i>Buscar Venta
+                            </button>
+                            <button class="btn btn-warning" onclick="exportSalesToCSV()">
+                                <i class="fas fa-file-csv me-1"></i>Exportar CSV
+                            </button>
+                            <button class="btn btn-primary" onclick="exportSalesToExcel()">
+                                <i class="fas fa-file-excel me-1"></i>Exportar Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            <input type="text" class="form-control search-box" id="saleSearchInput" placeholder="Buscar ventas...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Producto</th>
+                                        <th>Cliente</th>
+                                        <th>Teléfono</th>
+                                        <th>Vendedor</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio Unit.</th>
+                                        <th>Descuento</th>
+                                        <th>Total</th>
+                                        <th>Monto Recibido</th>
+                                        <th>Saldo</th>
+                                        <th>Método Pago</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="salesTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i>Agregar Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addProductForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre del Producto *</label>
+                                <input type="text" class="form-control" id="productName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Categoría *</label>
+                                <select class="form-select" id="productCategory" required>
+                                    <option value="">Seleccionar categoría</option>
+                                    <option value="electrodos">Electrodos</option>
+                                    <option value="equipos">Equipos de Soldadura</option>
+                                    <option value="accesorios">Accesorios</option>
+                                    <option value="gases">Gases</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="productStock" min="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio Unitario ($)*</label>
+                                <input type="number" class="form-control" id="productPrice" min="0" step="0.01" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Stock Mínimo</label>
+                                <input type="number" class="form-control" id="productMinStock" min="0" value="10">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="productSupplier">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="addProduct()">
+                        <i class="fas fa-save me-1"></i>Guardar Producto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editProductForm">
+                        <input type="hidden" id="editProductId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre del Producto *</label>
+                                <input type="text" class="form-control" id="editProductName" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Categoría *</label>
+                                <select class="form-select" id="editProductCategory" required>
+                                    <option value="">Seleccionar categoría</option>
+                                    <option value="electrodos">Electrodos</option>
+                                    <option value="equipos">Equipos de Soldadura</option>
+                                    <option value="accesorios">Accesorios</option>
+                                    <option value="gases">Gases</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="editProductStock" min="0" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio Unitario ($)*</label>
+                                <input type="number" class="form-control" id="editProductPrice" min="0" step="0.01" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Stock Mínimo</label>
+                                <input type="number" class="form-control" id="editProductMinStock" min="0" value="10">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Proveedor</label>
+                            <input type="text" class="form-control" id="editProductSupplier">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" onclick="updateProduct()">
+                        <i class="fas fa-save me-1"></i>Actualizar Venta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+    
+    
+
+    <!-- Add Sale Modal -->
+    <div class="modal fade" id="addSaleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-shopping-cart me-2"></i>Registrar Nueva Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSaleForm">
+                        <div class="mb-3">
+                            <label class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="saleCustomer" placeholder="Nombre del cliente">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Número de Celular</label>
+                            <input type="tel" class="form-control" id="salePhone" placeholder="999 999 999" pattern="[0-9]{3} [0-9]{3} [0-9]{3}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Producto *</label>
+                            <select class="form-select" id="saleProduct" required>
+                                <option value="">Seleccionar producto</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="saleQuantity" min="1" value="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio Unitario ($)</label>
+                                <input type="number" class="form-control" id="salePrice" min="0" step="0.01" readonly>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio con Descuento ($)</label>
+                                <input type="number" class="form-control" id="saleDiscountPrice" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Vendedor *</label>
+                            <select class="form-select" id="saleVendor" required>
+                                <option value="">Seleccionar vendedor</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Estado de la Venta *</label>
+                            <select class="form-select" id="saleStatus" required>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="reservada">Reservada</option>
+                                <option value="completada">Venta Completada</option>
+                            </select>
+                        </div>
+                        
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Total ($)</label>
+                            <input type="number" class="form-control" id="saleTotal" min="0" step="0.01" readonly>
+                        </div>
+                        
+                        
+                        <!-- Campos de pago -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Monto Recibido ($)</label>
+                                <input type="number" class="form-control" id="saleReceived" min="0" step="0.01" placeholder="Cantidad recibida del cliente">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Saldo Restante ($)</label>
+                                <input type="number" class="form-control" id="saleBalance" min="0" step="0.01" readonly placeholder="Diferencia a devolver o pendiente">
+                            </div>
+                        </div>
+                        
+                        
+                        <!-- Método de Pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Método de Pago *</label>
+                            <select class="form-select" id="salePaymentMethod" required>
+                                <option value="">Seleccionar método de pago</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="yape">Yape</option>
+                                <option value="bcp">BCP</option>
+                                <option value="bbva">BBVA</option>
+                            </select>
+                        </div>
+  
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="addSale()">
+                        <i class="fas fa-cash-register me-1"></i>Procesar Venta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Sale Modal -->
+    <div class="modal fade" id="searchSaleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-search me-2"></i>Buscar Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">ID de Venta</label>
+                        <input type="number" class="form-control" id="searchSaleId" placeholder="Ingrese ID de venta">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="searchSale()">Buscar Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Sale Modal -->
+    <div class="modal fade" id="editSaleModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Editar Venta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSaleForm">
+                        <input type="hidden" id="editSaleId">
+                        <div class="mb-3">
+                            <label class="form-label">Cliente</label>
+                            <input type="text" class="form-control" id="editSaleCustomer">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Producto *</label>
+                            <select class="form-select" id="editSaleProduct" required>
+                                <option value="">Seleccionar producto</option>
+                            </select>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="editSaleQuantity" min="1" required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio Unitario ($)</label>
+                                <input type="number" class="form-control" id="editSalePrice" min="0" step="0.01">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Precio con Descuento ($)</label>
+                                <input type="number" class="form-control" id="editSaleDiscountPrice" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Vendedor *</label>
+                            <select class="form-select" id="editSaleVendor" required>
+                                <option value="">Seleccionar vendedor</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Total ($)</label>
+                            <input type="number" class="form-control" id="editSaleTotal" min="0" step="0.01" readonly>
+                        <div class="mb-3">
+                            <label class="form-label">Estado de la Venta *</label>
+                            <select class="form-select" id="editSaleStatus" required>
+                                <option value="pendiente">Pendiente</option>
+                                <option value="reservada">Reservada</option>
+                                <option value="completada">Venta Completada</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Número de Celular -->
+                        <div class="mb-3">
+                            <label class="form-label">Número de Celular</label>
+                            <input type="tel" class="form-control" id="editSalePhone" placeholder="999 999 999" pattern="[0-9]{3} [0-9]{3} [0-9]{3}">
+                        </div>
+                        
+                        <!-- Método de Pago -->
+                        <div class="mb-3">
+                            <label class="form-label">Método de Pago *</label>
+                            <select class="form-select" id="editSalePaymentMethod" required>
+                                <option value="">Seleccionar método de pago</option>
+                                <option value="efectivo">Efectivo</option>
+                                <option value="yape">Yape</option>
+                                <option value="bcp">BCP</option>
+                                <option value="bbva">BBVA</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Campos de pago -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Monto Recibido (S/)</label>
+                                <input type="number" class="form-control" id="editSaleReceived" min="0" step="0.01" placeholder="Cantidad recibida del cliente">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Saldo Restante (S/)</label>
+                                <input type="number" class="form-control" id="editSaleBalance" min="0" step="0.01" readonly placeholder="Diferencia a devolver o pendiente">
+                            </div>
+                        </div>
+                        
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" onclick="updateSale()">Actualizar Venta</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        let products = [];
+        let sales = [];
+        let currentUser = null;
+        let vendors = [];
+
+        // Verificar autenticación
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return false;
+            }
+            currentUser = JSON.parse(user);
+            document.getElementById('userInfo').textContent = `Bienvenido, ${currentUser.nombre}`;
+            return true;
+        }
+
+        // Cerrar sesión
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!checkAuth()) return;
+            
+            loadProducts();
+            loadSales();
+            loadProductsForSale();
+            loadVendors();
+            
+            // Eventos de búsqueda y filtro
+            document.getElementById('searchInput').addEventListener('input', renderProducts);
+            document.getElementById('categoryFilter').addEventListener('change', renderProducts);
+            document.getElementById('saleSearchInput').addEventListener('input', renderSales);
+            
+            // Eventos para calcular totales
+            document.getElementById('saleQuantity').addEventListener('input', calculateSaleTotal);
+            document.getElementById('saleDiscountPrice').addEventListener('input', calculateSaleTotal);
+            document.getElementById('editSaleQuantity').addEventListener('input', calculateEditSaleTotal);
+            document.getElementById('editSaleDiscountPrice').addEventListener('input', calculateEditSaleTotal);
+        });
+
+        // Cargar vendedores
+        async function loadVendors() {
+            try {
+                const response = await fetch('api/usuarios.php');
+                if (!response.ok) throw new Error('Error al cargar vendedores');
+                vendors = await response.json();
+                populateVendorSelects();
+            } catch (error) {
+                showNotification('Error al cargar vendedores: ' + error.message, 'error');
+            }
+        }
+
+        function populateVendorSelects() {
+            const saleVendor = document.getElementById('saleVendor');
+            const editSaleVendor = document.getElementById('editSaleVendor');
+            
+            saleVendor.innerHTML = '<option value="">Seleccionar vendedor</option>';
+            editSaleVendor.innerHTML = '<option value="">Seleccionar vendedor</option>';
+            
+            vendors.forEach(vendor => {
+                const option1 = document.createElement('option');
+                option1.value = vendor.id;
+                option1.textContent = vendor.nombre;
+                saleVendor.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = vendor.id;
+                option2.textContent = vendor.nombre;
+                editSaleVendor.appendChild(option2);
+            });
+            
+            // Seleccionar el usuario actual por defecto
+            saleVendor.value = currentUser.id;
+        }
+
+        // Cargar productos desde la API
+        async function loadProducts() {
+            try {
+                const response = await fetch('api/productos.php');
+                if (!response.ok) throw new Error('Error al cargar productos');
+                products = await response.json();
+                renderProducts();
+                updateStats();
+            } catch (error) {
+                showNotification('Error al cargar productos: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar ventas desde la API
+        async function loadSales() {
+            try {
+                const response = await fetch('api/ventas.php');
+                if (!response.ok) throw new Error('Error al cargar ventas');
+                sales = await response.json();
+                renderSales();
+                updateStats();
+            } catch (error) {
+                showNotification('Error al cargar ventas: ' + error.message, 'error');
+            }
+        }
+
+        // Cargar productos para el select de ventas
+        async function loadProductsForSale() {
+            try {
+                const response = await fetch('api/productos.php');
+                if (!response.ok) throw new Error('Error al cargar productos');
+                const productsData = await response.json();
+                
+                const selects = ['saleProduct', 'editSaleProduct'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Seleccionar producto</option>';
+                    
+                    productsData.forEach(product => {
+                        const option = document.createElement('option');
+                        option.value = product.id;
+                        option.textContent = `${product.nombre} - Stock: ${product.stock}`;
+                        option.dataset.price = product.precio;
+                        select.appendChild(option);
+                    });
+                });
+                
+                // Eventos para actualizar precios
+                document.getElementById('saleProduct').addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value) {
+                        document.getElementById('salePrice').value = selectedOption.dataset.price;
+                        document.getElementById('saleDiscountPrice').value = selectedOption.dataset.price;
+                        calculateSaleTotal();
+                    }
+                });
+                
+                document.getElementById('editSaleProduct').addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption.value) {
+                        document.getElementById('editSalePrice').value = selectedOption.dataset.price;
+                        document.getElementById('editSaleDiscountPrice').value = selectedOption.dataset.price;
+                        calculateEditSaleTotal();
+                    }
+                });
+            } catch (error) {
+                showNotification('Error al cargar productos para venta: ' + error.message, 'error');
+            }
+        }
+
+        function renderProducts() {
+            const tbody = document.getElementById('productsTable');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            
+            tbody.innerHTML = '';
+            
+            const filteredProducts = products.filter(product => {
+                const matchesSearch = product.nombre.toLowerCase().includes(searchTerm) || 
+                                    (product.proveedor && product.proveedor.toLowerCase().includes(searchTerm));
+                const matchesCategory = categoryFilter === '' || product.categoria === categoryFilter;
+                return matchesSearch && matchesCategory;
+            });
+            
+            filteredProducts.forEach(product => {
+                const isLowStock = product.stock <= product.stock_minimo;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <img src="https://placehold.co/60x60/dc3545/white?text=${encodeURIComponent(product.nombre.substring(0,2))}" 
+                                 alt="${product.nombre}" class="product-image me-3">
+                            <div>
+                                <div class="fw-bold">${product.nombre}</div>
+                                <small class="text-muted">ID: ${product.id}</small>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-capitalize">${product.categoria}</td>
+                    <td>
+                        <span class="status-badge ${isLowStock ? 'low-stock' : 'in-stock'}">
+                            ${product.stock} ${isLowStock ? '(Bajo stock)' : '(En stock)'}
+                        </span>
+                    </td>
+                    <td>$${parseFloat(product.precio).toFixed(2)}</td>
+                    <td>${product.proveedor || 'N/A'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editProduct(${product.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${product.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function renderSales() {
+            const tbody = document.getElementById('salesTable');
+            const searchTerm = document.getElementById('saleSearchInput').value.toLowerCase();
+            
+            tbody.innerHTML = '';
+            
+            const filteredSales = sales.filter(sale => {
+                const matchesSearch = sale.id.toString().includes(searchTerm) ||
+                                    sale.producto_nombre.toLowerCase().includes(searchTerm) ||
+                                    (sale.cliente && sale.cliente.toLowerCase().includes(searchTerm)) ||
+                                    sale.vendedor_nombre.toLowerCase().includes(searchTerm);
+                return matchesSearch;
+            });
+            
+            filteredSales.forEach(sale => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${sale.id}</td>
+                    <td>${sale.producto_nombre}</td>
+                    <td>${sale.cliente || 'N/A'}</td>
+                    <td>${sale.telefono || 'N/A'}</td>
+                    <td>${sale.vendedor_nombre}</td>
+                    <td>${sale.cantidad}</td>
+                    <td>$${parseFloat(sale.precio_unitario).toFixed(2)}</td>
+                    <td>$${parseFloat(sale.descuento_aplicado).toFixed(2)}</td>
+                    <td>$${parseFloat(sale.total).toFixed(2)}</td>
+                    <td>$${parseFloat(sale.precio_recibido).toFixed(2)}</td>
+                    <td>$${parseFloat(sale.saldo_restante).toFixed(2)}</td>
+                    <td>
+                        ${sale.metodo_pago ? 
+                            `<span class="status-badge ${sale.metodo_pago === 'efectivo' ? 'in-stock' : sale.metodo_pago === 'yape' ? 'warning' : sale.metodo_pago === 'bcp' ? 'low-stock' : 'primary'}">${sale.metodo_pago}</span>` : 
+                            '<span class="text-muted">N/A</span>'
+                        }
+                    </td>
+                    <td><span class="status-badge ${sale.estado === 'completada' ? 'in-stock' : sale.estado === 'reservada' ? 'warning' : 'low-stock'}">${sale.estado === 'completada' ? 'Venta completada' : sale.estado}</span></td>
+                    <td>${new Date(sale.fecha_venta).toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="editSale(${sale.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSale(${sale.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('totalProducts').textContent = products.length;
+            const lowStockCount = products.filter(p => p.stock <= p.stock_minimo).length;
+            document.getElementById('lowStock').textContent = lowStockCount;
+            document.getElementById('totalSales').textContent = sales.length;
+            const totalRevenue = sales.reduce((sum, sale) => sum + parseFloat(sale.total), 0);
+            document.getElementById('revenue').textContent = '$' + totalRevenue.toFixed(2);
+        }
+
+        async function addProduct() {
+            const formData = {
+                nombre: document.getElementById('productName').value,
+                categoria: document.getElementById('productCategory').value,
+                stock: parseInt(document.getElementById('productStock').value),
+                precio: parseFloat(document.getElementById('productPrice').value),
+                proveedor: document.getElementById('productSupplier').value,
+                stock_minimo: parseInt(document.getElementById('productMinStock').value) || 10
+            };
+            
+            try {
+                const response = await fetch('api/productos.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) throw new Error('Error al guardar producto');
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Producto agregado exitosamente', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
+                    modal.hide();
+                    document.getElementById('addProductForm').reset();
+                    loadProducts();
+                    loadProductsForSale();
+                }
+            } catch (error) {
+                showNotification('Error al agregar producto: ' + error.message, 'error');
+            }
+        }
+
+        function calculateSaleTotal() {
+            const quantity = parseFloat(document.getElementById('saleQuantity').value) || 0;
+            const discountPrice = parseFloat(document.getElementById('saleDiscountPrice').value) || 
+                                parseFloat(document.getElementById('salePrice').value) || 0;
+            const total = quantity * discountPrice;
+            document.getElementById('saleTotal').value = total.toFixed(2);
+            
+            // Calcular saldo restante si hay precio recibido
+            const received = parseFloat(document.getElementById('saleReceived').value) || 0;
+            const balance = received - total;
+            document.getElementById('saleBalance').value = balance.toFixed(2);
+            
+            // Evento para calcular saldo cuando cambie el precio recibido
+            document.getElementById('saleReceived').addEventListener('input', calculateSaleTotal);
+        }
+
+        async function addSale() {
+            const productId = document.getElementById('saleProduct').value;
+            const quantity = parseInt(document.getElementById('saleQuantity').value);
+            const price = parseFloat(document.getElementById('salePrice').value);
+            const discountPrice = parseFloat(document.getElementById('saleDiscountPrice').value) || price;
+            const total = parseFloat(document.getElementById('saleTotal').value);
+            const customer = document.getElementById('saleCustomer').value;
+            const phone = document.getElementById('salePhone').value;
+            const vendorId = document.getElementById('saleVendor').value;
+            const status = document.getElementById('saleStatus').value;
+            const paymentMethod = document.getElementById('salePaymentMethod').value; // ¡Este es el campo problemático!
+            const received = parseFloat(document.getElementById('saleReceived').value) || 0;
+            const balance = parseFloat(document.getElementById('saleBalance').value) || 0;
+            
+            // Validar campos requeridos
+            if (!productId || !vendorId || quantity <= 0 || total <= 0 || !paymentMethod) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+            
+            // Validar que el método de pago no sea vacío
+            if (!paymentMethod || paymentMethod === '') {
+                showNotification('Por favor seleccione un método de pago', 'error');
+                return;
+            }
+            
+            const formData = {
+                producto_id: productId,
+                cantidad: quantity,
+                precio_unitario: price,
+                precio_con_descuento: discountPrice,
+                total: total,
+                cliente: customer,
+                telefono: phone,
+                vendedor_id: vendorId,
+                estado: status,
+                metodo_pago: paymentMethod,
+                precio_recibido: received,
+                saldo_restante: balance
+            };
+            
+            try {
+                const response = await fetch('api/ventas.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) throw new Error('Error al registrar venta');
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Venta registrada exitosamente', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addSaleModal'));
+                    modal.hide();
+                    document.getElementById('addSaleForm').reset();
+                    document.getElementById('saleStatus').value = 'pendiente';
+                    document.getElementById('saleReceived').value = '';
+                    document.getElementById('saleBalance').value = '';
+                    document.getElementById('salePaymentMethod').value = ''; // Limpiar método de pago
+                    document.getElementById('salePhone').value = ''; // Limpiar teléfono
+                    loadProducts();
+                    loadSales();
+                    loadProductsForSale();
+                }
+            } catch (error) {
+                showNotification('Error al registrar venta: ' + error.message, 'error');
+            }
+        }
+        async function deleteProduct(id) {
+            if (!confirm('¿Está seguro de eliminar este producto? Esta acción no se puede deshacer.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`api/productos.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('Producto eliminado exitosamente', 'success');
+                    loadProducts();
+                    loadProductsForSale();
+                } else {
+                    showNotification('Error: ' + (result.error || 'No se pudo eliminar el producto'), 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión: ' + error.message, 'error');
+            }
+        }
+
+        async function deleteSale(id) {
+            if (!confirm('¿Está seguro de eliminar esta venta? Se restaurará el stock del producto.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`api/ventas.php?id=${id}`, {
+                    method: 'DELETE',
+                    headers: {'Content-Type': 'application/json'}
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('Venta eliminada exitosamente', 'success');
+                    loadSales();
+                    loadProducts();
+                } else {
+                    showNotification('Error: ' + (result.error || 'No se pudo eliminar la venta'), 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión: ' + error.message, 'error');
+            }
+        }
+
+        async function searchSale() {
+            const saleId = document.getElementById('searchSaleId').value;
+            if (!saleId) {
+                showNotification('Por favor ingrese un ID de venta', 'error');
+                return;
+            }
+            
+            const sale = sales.find(s => s.id == saleId);
+            if (sale) {
+                fillEditSaleForm(sale);
+                const modal = bootstrap.Modal.getInstance(document.getElementById('searchSaleModal'));
+                modal.hide();
+                const editModal = new bootstrap.Modal(document.getElementById('editSaleModal'));
+                editModal.show();
+            } else {
+                showNotification('Venta no encontrada', 'error');
+            }
+        }
+
+        function fillEditSaleForm(sale) {
+            const elements = {
+                id: document.getElementById('editSaleId'),
+                customer: document.getElementById('editSaleCustomer'),
+                phone: document.getElementById('editSalePhone'),
+                product: document.getElementById('editSaleProduct'),
+                quantity: document.getElementById('editSaleQuantity'),
+                price: document.getElementById('editSalePrice'),
+                discountPrice: document.getElementById('editSaleDiscountPrice'),
+                vendor: document.getElementById('editSaleVendor'),
+                total: document.getElementById('editSaleTotal'),
+                status: document.getElementById('editSaleStatus'),
+                paymentMethod: document.getElementById('editSalePaymentMethod'),
+                received: document.getElementById('editSaleReceived'),
+                balance: document.getElementById('editSaleBalance')
+            };
+            
+            // Asignar valores solo si los elementos existen
+            if (elements.id) elements.id.value = sale.id;
+            if (elements.customer) elements.customer.value = sale.cliente || '';
+            if (elements.phone) elements.phone.value = sale.telefono || '';
+            if (elements.product) elements.product.value = sale.producto_id;
+            if (elements.quantity) elements.quantity.value = sale.cantidad;
+            if (elements.price) elements.price.value = sale.precio_unitario;
+            if (elements.discountPrice) elements.discountPrice.value = sale.precio_con_descuento || sale.precio_unitario;
+            if (elements.vendor) elements.vendor.value = sale.vendedor_id;
+            if (elements.total) elements.total.value = sale.total;
+            if (elements.status) elements.status.value = sale.estado || 'pendiente';
+            if (elements.paymentMethod) elements.paymentMethod.value = sale.metodo_pago || '';
+            if (elements.received) elements.received.value = sale.precio_recibido || '';
+            if (elements.balance) elements.balance.value = sale.saldo_restante || '';
+        }
+
+        function calculateEditSaleTotal() {
+            const quantity = parseFloat(document.getElementById('editSaleQuantity').value) || 0;
+            const discountPrice = parseFloat(document.getElementById('editSaleDiscountPrice').value) || 
+                                parseFloat(document.getElementById('editSalePrice').value) || 0;
+            const total = quantity * discountPrice;
+            document.getElementById('editSaleTotal').value = total.toFixed(2);
+            
+            // Calcular saldo restante si hay precio recibido
+            const received = parseFloat(document.getElementById('editSaleReceived').value) || 0;
+            const balance = received - total;
+            document.getElementById('editSaleBalance').value = balance.toFixed(2);
+        }
+
+        function editSale(id) {
+            const sale = sales.find(s => s.id == id);
+            if (sale) {
+                // Verificar que el modal exista
+                const modal = new bootstrap.Modal(document.getElementById('editSaleModal'));
+                if (!modal) {
+                    showNotification('Error: Modal de edición no encontrado', 'error');
+                    return;
+                }
+                
+                fillEditSaleForm(sale);
+                modal.show();
+            } else {
+                showNotification('Venta no encontrada', 'error');
+            }
+        }
+
+        async function updateSale() {
+            const saleId = document.getElementById('editSaleId').value;
+            const productId = document.getElementById('editSaleProduct').value;
+            const quantity = parseInt(document.getElementById('editSaleQuantity').value);
+            const price = parseFloat(document.getElementById('editSalePrice').value);
+            const discountPrice = parseFloat(document.getElementById('editSaleDiscountPrice').value) || price;
+            const total = parseFloat(document.getElementById('editSaleTotal').value);
+            const customer = document.getElementById('editSaleCustomer').value;
+            const phone = document.getElementById('editSalePhone').value;
+            const vendorId = document.getElementById('editSaleVendor').value;
+            const status = document.getElementById('editSaleStatus').value;
+            const paymentMethod = document.getElementById('editSalePaymentMethod').value;
+            const received = parseFloat(document.getElementById('editSaleReceived').value) || 0;
+            const balance = parseFloat(document.getElementById('editSaleBalance').value) || 0;
+            
+            // Validar campos requeridos
+            if (!productId || !vendorId || quantity <= 0 || total <= 0 || !paymentMethod) {
+                showNotification('Por favor complete todos los campos requeridos', 'error');
+                return;
+            }
+            
+            // Validar que el método de pago no sea vacío
+            if (!paymentMethod || paymentMethod === '') {
+                showNotification('Por favor seleccione un método de pago', 'error');
+                return;
+            }
+            
+            const formData = {
+                id: saleId,
+                producto_id: productId,
+                cantidad: quantity,
+                precio_unitario: price,
+                precio_con_descuento: discountPrice,
+                total: total,
+                cliente: customer,
+                telefono: phone,
+                vendedor_id: vendorId,
+                estado: status,
+                metodo_pago: paymentMethod,
+                precio_recibido: received,
+                saldo_restante: balance
+            };
+            
+            try {
+                const response = await fetch('api/ventas.php', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) throw new Error('Error al actualizar venta');
+                
+                const result = await response.json();
+                if (result.success) {
+                    showNotification('Venta actualizada exitosamente', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editSaleModal'));
+                    modal.hide();
+                    loadSales();
+                    loadProducts();
+                }
+            } catch (error) {
+                showNotification('Error al actualizar venta: ' + error.message, 'error');
+            }
+        }
+
+        function exportData() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                products: products,
+                sales: sales,
+                summary: {
+                    totalProducts: products.length,
+                    totalSales: sales.length,
+                    totalRevenue: sales.reduce((sum, sale) => sum + parseFloat(sale.total), 0)
+                }
+            };
+            
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'inventario_soldadura_' + new Date().toISOString().split('T')[0] + '.json';
+            link.click();
+            
+            showNotification('Datos exportados exitosamente', 'success');
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        
+        
+        function exportProductsToCSV() {
+            const headers = ['ID', 'Nombre', 'Categoría', 'Stock', 'Precio', 'Proveedor', 'Stock Mínimo'];
+            let csvContent = headers.join(',') + '\n';
+            
+            products.forEach(product => {
+                const row = [
+                    product.id,
+                    product.nombre.replace(/"/g, '""'),
+                    product.categoria,
+                    product.stock,
+                    product.precio,
+                    product.proveedor ? product.proveedor.replace(/"/g, '""') : '',
+                    product.stock_minimo
+                ];
+                csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'productos_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Productos exportados a CSV exitosamente', 'success');
+        }
+        
+        function exportSalesToCSV() {
+            const headers = ['ID', 'Producto', 'Cliente', 'Vendedor', 'Cantidad', 'Precio Unit.', 'Descuento', 'Total', 'Fecha'];
+            let csvContent = headers.join(',') + '\n';
+            
+            sales.forEach(sale => {
+                const row = [
+                    sale.id,
+                    sale.producto_nombre.replace(/"/g, '""'),
+                    sale.cliente ? sale.cliente.replace(/"/g, '""') : '',
+                    sale.vendedor_nombre.replace(/"/g, '""'),
+                    sale.cantidad,
+                    sale.precio_unitario,
+                    sale.descuento_aplicado,
+                    sale.total,
+                    new Date(sale.fecha_venta).toLocaleString()
+                ];
+                csvContent += row.map(field => `"${field}"`).join(',') + '\n';
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ventas_' + new Date().toISOString().split('T')[0] + '.csv');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Ventas exportadas a CSV exitosamente', 'success');
+        }
+        
+        function exportProductsToExcel() {
+            // Crear una tabla HTML para exportar
+            let tableHTML = '<table border="1"><thead><tr>';
+            tableHTML += '<th>ID</th><th>Nombre</th><th>Categoría</th><th>Stock</th><th>Precio</th><th>Proveedor</th><th>Stock Mínimo</th>';
+            tableHTML += '</tr></thead><tbody>';
+            
+            products.forEach(product => {
+                tableHTML += `<tr>
+                    <td>${product.id}</td>
+                    <td>${product.nombre}</td>
+                    <td>${product.categoria}</td>
+                    <td>${product.stock}</td>
+                    <td>${product.precio}</td>
+                    <td>${product.proveedor || ''}</td>
+                    <td>${product.stock_minimo}</td>
+                </tr>`;
+            });
+            
+            tableHTML += '</tbody></table>';
+            
+            // Crear un blob con el contenido HTML
+            const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'productos_' + new Date().toISOString().split('T')[0] + '.xls');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Productos exportados a Excel exitosamente', 'success');
+        }
+        
+        function exportSalesToExcel() {
+            // Crear una tabla HTML para exportar
+            let tableHTML = '<table border="1"><thead><tr>';
+            tableHTML += '<th>ID</th><th>Producto</th><th>Cliente</th><th>Vendedor</th><th>Cantidad</th><th>Precio Unit.</th><th>Descuento</th><th>Total</th><th>Fecha</th>';
+            tableHTML += '</tr></thead><tbody>';
+            
+            sales.forEach(sale => {
+                tableHTML += `<tr>
+                    <td>${sale.id}</td>
+                    <td>${sale.producto_nombre}</td>
+                    <td>${sale.cliente || ''}</td>
+                    <td>${sale.vendedor_nombre}</td>
+                    <td>${sale.cantidad}</td>
+                    <td>${sale.precio_unitario}</td>
+                    <td>${sale.descuento_aplicado}</td>
+                    <td>${sale.total}</td>
+                    <td>${new Date(sale.fecha_venta).toLocaleString()}</td>
+                </tr>`;
+            });
+            
+            tableHTML += '</tbody></table>';
+            
+            // Crear un blob con el contenido HTML
+            const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/vnd.ms-excel' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', 'ventas_' + new Date().toISOString().split('T')[0] + '.xls');
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showNotification('Ventas exportadas a Excel exitosamente', 'success');
+        }
+        
+        
+        
+        function editProduct(id) {
+            const product = products.find(p => p.id == id);
+            if (product) {
+                document.getElementById('editProductId').value = product.id;
+                document.getElementById('editProductName').value = product.nombre;
+                document.getElementById('editProductCategory').value = product.categoria;
+                document.getElementById('editProductStock').value = product.stock;
+                document.getElementById('editProductPrice').value = product.precio;
+                document.getElementById('editProductMinStock').value = product.stock_minimo;
+                document.getElementById('editProductSupplier').value = product.proveedor || '';
+                
+                const modal = new bootstrap.Modal(document.getElementById('editProductModal'));
+                modal.show();
+            }
+        }
+        
+        async function updateProduct() {
+            const productId = document.getElementById('editProductId').value;
+            const formData = {
+                nombre: document.getElementById('editProductName').value,
+                categoria: document.getElementById('editProductCategory').value,
+                stock: parseInt(document.getElementById('editProductStock').value),
+                precio: parseFloat(document.getElementById('editProductPrice').value),
+                proveedor: document.getElementById('editProductSupplier').value,
+                stock_minimo: parseInt(document.getElementById('editProductMinStock').value) || 10
+            };
+            
+            try {
+                const response = await fetch(`api/productos.php?id=${productId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    showNotification('Producto actualizado exitosamente', 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editProductModal'));
+                    modal.hide();
+                    loadProducts();
+                    loadProductsForSale();
+                } else {
+                    showNotification('Error: ' + (result.error || 'No se pudo actualizar el producto'), 'error');
+                }
+            } catch (error) {
+                showNotification('Error de conexión: ' + error.message, 'error');
+            }
+        }
+        
+        
+        
+        
+        
+        
+    </script>
+</body>
+</html>
